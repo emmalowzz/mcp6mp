@@ -2,6 +2,10 @@
 
 Synchronised with `/build/error.md` on every push.
 
+## 2026-10-08 — Add prompt.md
+
+- Added `prompt.md` with every prompt given to Claude Code for this project, in order.
+
 ## 2026-10-08 — v1.0.0 Initial build
 
 **Source inputs:** `ACTIVENUTRI_MASTERPROMPT.md` and the team’s Miro Business Model Canvas (`docs/miro-business-model-canvas.png`).

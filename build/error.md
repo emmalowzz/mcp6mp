@@ -2,6 +2,10 @@
 
 Synchronised with every push. Newest first.
 
+## 2026-10-08 — Add prompt.md
+
+Documentation only; no build or runtime errors.
+
 ## 2026-10-08 — Initial ActiveNutri build
 
 | # | Area | Error / symptom | Root cause | Fix | Status |
