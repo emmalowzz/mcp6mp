@@ -2,6 +2,23 @@
 
 Synchronised with `/build/error.md` on every push.
 
+## 2026-10-08 — v1.1.0 More appealing meals and clearer ordering
+
+- **Meal illustrations:** each of the four meals now has a detailed top-down illustration (`src/components/MealArt.tsx`). An optional `photo` field swaps in a real photo (see README).
+- **Meal content:** each meal now has a tagline, ingredients, allergens, a "good for" line and a nutritionist's note.
+- **New meal detail pop-up:** shows the meal next to two prices: order once, or S$4.45 a meal on the Athlete plan.
+- **Overview:**
+  - The hero now leads with the food ("Order a meal", "See plans from S$4.45/meal") and adds trust points.
+  - New "On the menu today" strip and "How it works" steps.
+  - The Athlete tier shows its per-meal price, the saving, and meal thumbnails.
+  - "Cancel anytime" and "No card needed" notes added.
+- **Nutrition & Meals:**
+  - Chef's-pick banner, image-led menu cards, and an Athlete-plan upsell.
+  - The Snap & Calculate frame now matches the table colour.
+- **Ordering:** the order pop-up shows the meal image, confirms with the meal, and suggests the plan. Images also appear in the venue stock lists and in My orders.
+- **Header:** new "My orders" shortcut once a meal is ordered.
+- **Phone:** bottom tabs relabelled Overview, Meals, Venues, Pods, Partners.
+
 ## 2026-10-08 — Add prompt.md
 
 - Added `prompt.md` with every prompt given to Claude Code for this project, in order.

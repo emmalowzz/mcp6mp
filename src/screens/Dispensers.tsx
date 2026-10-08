@@ -3,6 +3,7 @@ import { Nfc, RefreshCw, Search, Snowflake, Flame } from 'lucide-react';
 import { Button, Card, SectionHeader, Segmented, Sparkline, StatusDot, inputCls, cx } from '../components/ui';
 import { useStore } from '../lib/store';
 import { mealById, pods, type Pod, type Region } from '../data/catalog';
+import { MealArt } from '../components/MealArt';
 
 function useZone(base: number, jitter: number, podId: string) {
   const [hist, setHist] = useState<number[]>(() => Array.from({ length: 30 }, () => base + (Math.random() - 0.5) * jitter));
@@ -205,6 +206,9 @@ export function Dispensers() {
             <ul className="mt-3 grid gap-2">
               {reservations.map((r) => (
                 <li key={r.createdAt} className="flex flex-wrap items-center gap-3 rounded-2xl bg-canvas p-3 text-[14px]">
+                  <span className="h-10 w-10 overflow-hidden rounded-lg">
+                    <MealArt meal={r.mealId} photo={mealById(r.mealId).photo} alt="" />
+                  </span>
                   <span className="font-semibold">{mealById(r.mealId).name}</span>
                   <span className="text-muted tabular-nums">
                     {r.podId} · passcode {r.passcode}

@@ -3,7 +3,14 @@ export type MealId = 'sous-vide-salmon' | 'citrus-herb-chicken' | 'tempeh-quinoa
 export type Meal = {
   id: MealId;
   name: string;
+  tagline: string;
   blurb: string;
+  ingredients: string[];
+  allergens: string;
+  goodFor: string;
+  note: string;
+  /** Optional real photo, e.g. '/meals/sous-vide-salmon.jpg' (put the file in public/meals/). */
+  photo?: string;
   kitchen: string;
   priceSgd: number;
   kcal: number;
@@ -30,7 +37,12 @@ export const meals: Meal[] = [
   {
     id: 'sous-vide-salmon',
     name: 'Sous-vide Salmon',
+    tagline: "Buttery, flaky salmon with a miso-ginger glaze",
     blurb: 'Norwegian salmon at 52°C, brown rice, edamame and miso-ginger greens.',
+    ingredients: ["Norwegian salmon, sous-vide 52\u00b0C", "Brown rice", "Edamame", "Miso-ginger greens", "Spring onion, sesame, lime"],
+    allergens: "Fish, soy, sesame",
+    goodFor: "Endurance runs, swims and long rides",
+    note: "Omega-3s help calm post-session inflammation; the brown rice refills glycogen without a sugar spike.",
     kitchen: 'Kitchen Collective, Tai Seng',
     priceSgd: 14.9,
     kcal: 620,
@@ -44,7 +56,12 @@ export const meals: Meal[] = [
   {
     id: 'citrus-herb-chicken',
     name: 'Citrus Herb Chicken',
+    tagline: "Smoky grilled thigh, bright calamansi glaze",
     blurb: 'Lemongrass-calamansi chicken thigh, sweet potato mash and charred broccolini.',
+    ingredients: ["Lemongrass-calamansi chicken thigh", "Roasted sweet potato mash", "Charred broccolini", "Calamansi halves, herbs"],
+    allergens: "No common allergens",
+    goodFor: "Strength, power and team-sport sessions",
+    note: "45 g protein hits the muscle-repair window; sweet potato brings slow carbs and potassium lost in sweat.",
     kitchen: 'GrainHaus Central Kitchen, Jurong',
     priceSgd: 12.5,
     kcal: 580,
@@ -58,7 +75,12 @@ export const meals: Meal[] = [
   {
     id: 'tempeh-quinoa',
     name: 'Tempeh Quinoa Bowl',
+    tagline: "Sweet-savoury kecap tempeh with a lime crunch",
     blurb: 'Kecap-glazed tempeh, tri-colour quinoa, pickled carrot, kale and peanut-lime dressing.',
+    ingredients: ["Kecap manis-glazed tempeh", "Tri-colour quinoa", "Kale", "Pickled carrot", "Peanut-lime dressing, chilli, coriander"],
+    allergens: "Soy, peanuts",
+    goodFor: "Plant-based athletes and rest days",
+    note: "Tempeh and quinoa together give a complete plant protein; fermented tempeh is easy on the gut.",
     kitchen: 'Green Ladle Cloud Kitchen, Kallang',
     priceSgd: 11.9,
     kcal: 540,
@@ -72,7 +94,12 @@ export const meals: Meal[] = [
   {
     id: 'bone-broth-congee',
     name: 'Warm Bone Broth Congee',
+    tagline: "Silky 12-hour broth congee, soft egg on top",
     blurb: '12-hour chicken bone broth congee, shredded chicken, ginger, spring onion and egg.',
+    ingredients: ["12-hour chicken bone broth", "Rice congee", "Shredded chicken", "Soft-boiled egg", "Ginger, spring onion, fried shallots"],
+    allergens: "Egg",
+    goodFor: "Late sessions, rehab days and sensitive stomachs",
+    note: "Warm, salty and gentle: replaces sodium after heavy sweating and is easy to eat when appetite is low.",
     kitchen: 'Kitchen Collective, Tai Seng',
     priceSgd: 9.9,
     kcal: 430,
@@ -84,6 +111,10 @@ export const meals: Meal[] = [
     hue: '#a78bfa',
   },
 ];
+
+// Athlete plan: S$89 for 20 meals.
+export const ATHLETE_PER_MEAL = 89 / 20;
+export const avgMealPrice = meals.reduce((a, m) => a + m.priceSgd, 0) / meals.length;
 
 export const mealById = (id: string) => meals.find((m) => m.id === id) ?? meals[0];
 

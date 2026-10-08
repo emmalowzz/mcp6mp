@@ -1,68 +1,88 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Camera, CameraOff, Check, ScanLine, Ticket } from 'lucide-react';
 import { Button, Card, Donut, MacroLegend, SectionHeader, Segmented, inputCls, cx } from '../components/ui';
-import { categories, meals, type Category } from '../data/catalog';
+import { ATHLETE_PER_MEAL, avgMealPrice, categories, meals, type Category } from '../data/catalog';
+import { MealArt } from '../components/MealArt';
+import { MealCard } from '../components/MealCard';
 import { sgd, useStore, VOUCHER_CODE, VOUCHER_DISCOUNT } from '../lib/store';
 
+function MenuHero() {
+  const { open } = useStore();
+  const featured = meals[1];
+  return (
+    <section className="grid overflow-hidden rounded-3xl bg-white shadow-[0_8px_24px_rgba(0,0,0,.06)] md:grid-cols-2">
+      <button onClick={() => open({ type: 'meal', mealId: featured.id })} className="relative aspect-[4/3] md:aspect-auto" aria-label={`See ${featured.name}`}>
+        <MealArt meal={featured.id} photo={featured.photo} alt={featured.name} />
+      </button>
+      <div className="flex flex-col justify-center p-6 sm:p-10">
+        <p className="eyebrow text-pulse">Chef’s pick this week</p>
+        <h1 className="headline mt-2 text-[34px] font-extrabold sm:text-[44px]">{featured.name}</h1>
+        <p className="mt-3 text-[17px] text-muted">{featured.blurb}</p>
+        <p className="mt-4 text-[15px] font-semibold tabular-nums">
+          {featured.protein} g protein · {featured.kcal} kcal · ready at your pod
+        </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Button onClick={() => open({ type: 'reserve', mealId: featured.id })}>Order for {sgd(featured.priceSgd)}</Button>
+          <Button variant="secondary" onClick={() => open({ type: 'meal', mealId: featured.id })}>
+            What’s inside
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function MealBento() {
-  const { open, voucher } = useStore();
   const [cat, setCat] = useState<Category>('all');
   const list = meals.filter((m) => cat === 'all' || m.tags.includes(cat));
   return (
-    <section>
+    <section className="mt-14">
       <SectionHeader
-        eyebrow="SFA Grade-A recovery meals"
-        title="Cooked in licensed kitchens. Collected warm or chilled."
-        sub="Each recipe is vetted by a board-certified nutritionist and portioned for the first hour after training."
+        eyebrow="The recovery menu"
+        title="Real food, built for after training."
+        sub="Cooked fresh each morning in SFA Grade-A kitchens, vetted by a board-certified nutritionist, and waiting in the pod at your venue."
       />
       <div className="mb-5">
         <Segmented label="Dietary category" value={cat} onChange={setCat} options={categories} />
       </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        {list.map((m, i) => {
-          const price = voucher ? m.priceSgd * (1 - VOUCHER_DISCOUNT) : m.priceSgd;
-          return (
-            <Card key={m.id} className={cx('flex flex-col gap-5', i === 0 && list.length > 2 && 'md:row-span-1')}>
-              <div className="flex items-start gap-5">
-                <Donut
-                  protein={m.protein}
-                  carbs={m.carbs}
-                  fat={m.fat}
-                  size={104}
-                  center={
-                    <div>
-                      <div className="text-[18px] font-bold tabular-nums">{m.kcal}</div>
-                      <div className="text-[10px] text-muted">kcal</div>
-                    </div>
-                  }
-                />
-                <div className="min-w-0 flex-1">
-                  <h3 className="headline text-[22px] font-bold">{m.name}</h3>
-                  <p className="mt-1 text-[14px] text-muted">{m.blurb}</p>
-                </div>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
-                <div>
-                  <MacroLegend protein={m.protein} carbs={m.carbs} fat={m.fat} />
-                  <p className="mt-3 text-[12px] text-muted">
-                    Nutri-Grade A · SFA Grade-A hygiene · {m.kitchen} · held in {m.zone} zone
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 sm:flex-col sm:items-end">
-                  <p className="text-right tabular-nums">
-                    {voucher && <span className="mr-1.5 text-[13px] text-muted line-through">{sgd(m.priceSgd)}</span>}
-                    <span className="text-[20px] font-bold">{sgd(Math.round(price * 100) / 100)}</span>
-                  </p>
-                  <Button size="sm" onClick={() => open({ type: 'reserve', mealId: m.id })}>
-                    Reserve
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          );
-        })}
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {list.map((m) => (
+          <MealCard key={m.id} meal={m} />
+        ))}
         {!list.length && <p className="text-muted">No meals in this category yet.</p>}
       </div>
+    </section>
+  );
+}
+
+function PlanUpsell() {
+  const { open } = useStore();
+  const saving = Math.round((1 - ATHLETE_PER_MEAL / avgMealPrice) * 100);
+  return (
+    <section className="mt-14">
+      <Card className="grid items-center gap-6 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+        <div className="grid grid-cols-4 gap-2">
+          {meals.map((m) => (
+            <div key={m.id} className="aspect-square overflow-hidden rounded-2xl">
+              <MealArt meal={m.id} photo={m.photo} alt={m.name} />
+            </div>
+          ))}
+        </div>
+        <div>
+          <p className="eyebrow text-pulse">Athlete plan</p>
+          <h3 className="headline mt-1 text-[28px] font-bold">20 recovery meals a month for S$89.</h3>
+          <p className="mt-2 text-[15px] text-muted">
+            That’s <span className="font-semibold text-ink tabular-nums">{sgd(Math.round(ATHLETE_PER_MEAL * 100) / 100)}</span> a meal: {saving}% less than ordering one at a time, and
+            about the price of a hawker plate. You also get booking-bot access and a nutritionist chat. Cancel anytime.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Button onClick={() => open({ type: 'start', tier: 'athlete' })}>Start Athlete plan</Button>
+            <Button variant="secondary" onClick={() => open({ type: 'start', tier: 'community' })}>
+              Join free first
+            </Button>
+          </div>
+        </div>
+      </Card>
     </section>
   );
 }
@@ -181,7 +201,7 @@ function SnapAndCalculate() {
         sub="Photograph any plate — hawker or home-cooked — and see how it stacks up against your recovery target."
       />
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-        <div className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-black">
+        <div className={cx("relative aspect-[4/3] overflow-hidden rounded-3xl", camera ? "bg-black" : "bg-[#3b2f2a]")}>
           {camera ? <video ref={videoRef} playsInline muted className="absolute inset-0 h-full w-full object-cover" /> : <PlateArt plate={plate} />}
           {scanning && <div className="scanline absolute inset-x-0 h-0.5 bg-emerald-400/80 shadow-[0_0_16px_#34d399]" />}
           {boxes.map((b) => (
@@ -325,7 +345,9 @@ function Voucher() {
 export function Nutrition() {
   return (
     <>
+      <MenuHero />
       <MealBento />
+      <PlanUpsell />
       <Voucher />
       <SnapAndCalculate />
     </>

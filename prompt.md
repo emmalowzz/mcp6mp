@@ -27,3 +27,7 @@ Attached: a screenshot of the Miro Business Model Canvas, saved as [`docs/miro-b
 ## 3. Create this file
 
 > create a prompt.md file in the project main
+
+## 4. Make the site more appealing
+
+> please make this site more user friendly and make the meals more appealing for people to want to order or join the subscription plan. currently no pictures to make people want to pay for this service/product

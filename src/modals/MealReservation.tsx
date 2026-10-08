@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Check } from 'lucide-react';
 import { Button, Donut, Field, MacroLegend, Modal, inputCls } from '../components/ui';
 import { passcode as makePasscode, sgd, useStore, VOUCHER_DISCOUNT, type Reservation } from '../lib/store';
-import { mealById, pods, type MealId } from '../data/catalog';
+import { ATHLETE_PER_MEAL, mealById, pods, type MealId } from '../data/catalog';
+import { MealArt } from '../components/MealArt';
 
 function pickupWindows() {
   const out: string[] = [];
@@ -17,7 +18,7 @@ function pickupWindows() {
 }
 
 export function MealReservation({ mealId, podId }: { mealId: MealId; podId?: string }) {
-  const { close, open, voucher, addReservation } = useStore();
+  const { close, open, voucher, addReservation, profile } = useStore();
   const meal = mealById(mealId);
   const windows = pickupWindows();
   const available = pods.filter((p) => p.status === 'online');
@@ -42,9 +43,12 @@ export function MealReservation({ mealId, podId }: { mealId: MealId; podId?: str
     <Modal title={done ? 'Meal reserved' : 'Reserve a meal'} onClose={close}>
       {done ? (
         <div className="anim-rise text-center">
-          <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-pulse-soft text-pulse">
-            <Check />
-          </span>
+          <div className="mx-auto h-28 w-28 overflow-hidden rounded-full ring-4 ring-pulse-soft">
+            <MealArt meal={meal.id} photo={meal.photo} alt={meal.name} />
+          </div>
+          <p className="mt-3 flex items-center justify-center gap-1 text-[15px] font-semibold text-pulse">
+            <Check size={16} /> Confirmed
+          </p>
           <p className="mt-3 text-[15px]">
             {qty} × {meal.name} at {podInfo.name}, from {time}
           </p>
@@ -62,11 +66,14 @@ export function MealReservation({ mealId, podId }: { mealId: MealId; podId?: str
         </div>
       ) : (
         <div className="grid gap-4">
-          <div className="flex items-center gap-4 rounded-2xl bg-canvas p-4">
-            <Donut protein={meal.protein} carbs={meal.carbs} fat={meal.fat} size={80} center={<span className="text-[13px] font-bold tabular-nums">{meal.kcal}</span>} />
+          <div className="-mx-5 -mt-2 aspect-[16/8] overflow-hidden sm:-mx-7">
+            <MealArt meal={meal.id} photo={meal.photo} alt={meal.name} />
+          </div>
+          <div className="flex items-center gap-4">
+            <Donut protein={meal.protein} carbs={meal.carbs} fat={meal.fat} size={72} center={<span className="text-[12px] font-bold tabular-nums">{meal.kcal}</span>} />
             <div className="flex-1">
-              <p className="text-[16px] font-semibold">{meal.name}</p>
-              <p className="mb-2 text-[12px] text-muted">{meal.kitchen}</p>
+              <p className="text-[17px] font-semibold">{meal.name}</p>
+              <p className="mb-2 text-[13px] text-muted">{meal.tagline}</p>
               <MacroLegend protein={meal.protein} carbs={meal.carbs} fat={meal.fat} />
             </div>
           </div>
@@ -104,8 +111,13 @@ export function MealReservation({ mealId, podId }: { mealId: MealId; podId?: str
               <p className="text-[12px] text-muted">{voucher ? `${voucher} · ${VOUCHER_DISCOUNT * 100}% off first meal` : 'Total'}</p>
               <p className="text-[24px] font-bold tabular-nums">{sgd(total)}</p>
             </div>
-            <Button onClick={confirm}>Confirm reservation</Button>
+            <Button onClick={confirm}>Confirm order</Button>
           </div>
+          {!profile || profile.tier === 'community' ? (
+            <button onClick={() => open({ type: 'start', tier: 'athlete' })} className="rounded-2xl bg-pulse-soft p-3 text-left text-[13px] text-pulse hover:brightness-95">
+              <span className="font-semibold">Ordering often?</span> On the Athlete plan this meal costs {sgd(Math.round(ATHLETE_PER_MEAL * 100) / 100)}. See plan →
+            </button>
+          ) : null}
         </div>
       )}
     </Modal>

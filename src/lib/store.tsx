@@ -8,6 +8,7 @@ export type ModalState =
   | { type: 'mcp' }
   | { type: 'nfc'; podId?: string; passcode?: string }
   | { type: 'reserve'; mealId: MealId; podId?: string }
+  | { type: 'meal'; mealId: MealId }
   | { type: 'start'; tier?: string }
   | null;
 

@@ -4,7 +4,9 @@ import { Button, Card, Donut, Field, MacroLegend, SectionHeader, Segmented, inpu
 import { MapCanvas } from '../components/MapCanvas';
 import { useStore, sgd } from '../lib/store';
 import { callTool, type RecoveryResult } from '../lib/mcp';
-import { distanceKm, mealById, pods, tiers, venues, type MealId, type Region, type VenueId } from '../data/catalog';
+import { ATHLETE_PER_MEAL, avgMealPrice, distanceKm, mealById, meals, pods, tiers, venues, type MealId, type Region, type VenueId } from '../data/catalog';
+import { MealArt } from '../components/MealArt';
+import { MealCard } from '../components/MealCard';
 
 type Phase = 'training' | 'recovery';
 
@@ -46,26 +48,33 @@ function Hero() {
     <section className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
       <div>
         <p className="eyebrow text-pulse">Singapore sports nutrition &amp; recovery</p>
-        <h1 className="headline mt-3 text-[44px] font-extrabold sm:text-[64px]">
-          Fuel. Recover.
+        <h1 className="headline mt-3 text-[44px] font-extrabold sm:text-[60px]">
+          Recovery meals,
           <br />
-          Play again.
+          waiting where you train.
         </h1>
         <p className="mt-5 max-w-lg text-[17px] leading-relaxed text-muted">
-          Healthy food at your fingertips, without the hassle of meal prepping alone. Nutritionist-vetted recovery meals matched to your training,
-          collected from Smart Dispensers at ActiveSG venues — and every court booking in the same app.
+          Healthy food at your fingertips, without the hassle of meal prepping alone. Order a nutritionist-vetted meal before you play, then tap your phone
+          on the Smart Dispenser at your ActiveSG venue to collect it, chilled or hot.
         </p>
         <div className="mt-7 flex flex-wrap gap-3">
-          <Button onClick={() => open({ type: 'start' })}>
-            {profile ? 'Edit my profile' : 'Get started with Singpass'} <ArrowRight size={16} />
+          <Button onClick={() => go('nutrition')}>
+            Order a meal <ArrowRight size={16} />
           </Button>
-          <Button variant="secondary" onClick={() => document.getElementById('calculator')?.scrollIntoView({ behavior: 'smooth' })}>
-            Calculate recovery
-          </Button>
-          <Button variant="ghost" onClick={() => go('nutrition')}>
-            Browse meals
+          <Button variant="secondary" onClick={() => document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth' })}>
+            See plans from {sgd(Math.round(ATHLETE_PER_MEAL * 100) / 100)}/meal
           </Button>
         </div>
+        <ul className="mt-6 grid gap-1.5 text-[14px] text-muted sm:grid-cols-2">
+          {['SFA Grade-A kitchens', 'Vetted by nutritionists', '48 pods at ActiveSG venues', 'First meal 30% off'].map((t) => (
+            <li key={t} className="flex items-center gap-1.5">
+              <Check size={15} className="text-pulse" /> {t}
+            </li>
+          ))}
+        </ul>
+        <button onClick={() => open({ type: 'start' })} className="mt-4 text-[14px] font-semibold text-link hover:underline">
+          {profile ? 'Edit my profile' : 'New here? Set up your profile with Singpass'}
+        </button>
       </div>
 
       <Card className="relative overflow-hidden bg-ink! text-white">
@@ -124,6 +133,54 @@ function Hero() {
             : 'Recovery window open: eat within 30–60 min for best glycogen resynthesis.'}
         </p>
       </Card>
+    </section>
+  );
+}
+
+function MenuStrip() {
+  const { go } = useStore();
+  return (
+    <section className="mt-16">
+      <SectionHeader
+        eyebrow="On the menu today"
+        title="Hungry yet?"
+        sub="Four chef-made recovery meals, each one portioned for the hour after training."
+        right={
+          <Button variant="secondary" size="sm" onClick={() => go('nutrition')}>
+            Full menu <ArrowRight size={14} />
+          </Button>
+        }
+      />
+      <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 lg:mx-0 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0">
+        {meals.map((m) => (
+          <MealCard key={m.id} meal={m} compact className="w-[78%] shrink-0 snap-start sm:w-[45%] lg:w-auto" />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function HowItWorks() {
+  const steps = [
+    { icon: Salad, title: 'Pick your meal', body: 'Choose from the menu, or let the recovery calculator pick for your session.' },
+    { icon: MapPin, title: 'Choose your pod', body: 'Select the Smart Dispenser at the venue where you train. We stock it before you arrive.' },
+    { icon: Refrigerator, title: 'Tap to collect', body: 'Hold your phone to the pod after training. Your locker opens with your meal chilled or hot.' },
+  ];
+  return (
+    <section className="mt-16">
+      <SectionHeader eyebrow="How it works" title="Order in 30 seconds. Collect in 5." />
+      <ol className="grid gap-4 md:grid-cols-3">
+        {steps.map((st, i) => (
+          <li key={st.title} className="rounded-3xl bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3">
+              <span className="grid h-9 w-9 place-items-center rounded-full bg-pulse text-[15px] font-bold text-white tabular-nums">{i + 1}</span>
+              <st.icon size={22} className="text-pulse" />
+            </div>
+            <h3 className="mt-4 text-[19px] font-bold tracking-tight">{st.title}</h3>
+            <p className="mt-1 text-[15px] text-muted">{st.body}</p>
+          </li>
+        ))}
+      </ol>
     </section>
   );
 }
@@ -278,7 +335,9 @@ function RecoveryCalculator() {
               </div>
               <p className="text-[13px] text-muted">{result.window}</p>
               <div className="flex flex-col gap-4 rounded-2xl bg-canvas p-4 sm:flex-row sm:items-center">
-                <div className="h-12 w-12 shrink-0 rounded-xl" style={{ background: meal.hue }} aria-hidden />
+                <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl">
+                  <MealArt meal={meal.id} photo={meal.photo} alt="" />
+                </div>
                 <div className="flex-1">
                   <p className="text-[12px] text-muted">Recommended · waiting at {pod.id}</p>
                   <p className="text-[16px] font-semibold">{meal.name}</p>
@@ -421,7 +480,7 @@ function PodLocator() {
 function Tiers() {
   const { open, profile } = useStore();
   return (
-    <section className="mt-16">
+    <section id="plans" className="mt-16 scroll-mt-20">
       <SectionHeader
         eyebrow="Membership"
         title="Pick the plan that matches your training."
@@ -439,6 +498,20 @@ function Tiers() {
                 <span className="headline text-[40px] font-bold tabular-nums">{sgd(t.price)}</span>
                 <span className="text-[14px] text-muted"> / {t.period}</span>
               </p>
+              {t.id === 'athlete' && (
+                <p className="mt-1 text-[14px] font-semibold text-pulse tabular-nums">
+                  = {sgd(Math.round(ATHLETE_PER_MEAL * 100) / 100)} per meal · save {Math.round((1 - ATHLETE_PER_MEAL / avgMealPrice) * 100)}% vs ordering singly
+                </p>
+              )}
+              {t.id === 'athlete' && (
+                <div className="mt-3 flex -space-x-3">
+                  {meals.map((m) => (
+                    <div key={m.id} className="h-12 w-12 overflow-hidden rounded-full ring-2 ring-white">
+                      <MealArt meal={m.id} photo={m.photo} alt="" />
+                    </div>
+                  ))}
+                </div>
+              )}
               <p className="mt-2 text-[14px] text-muted">{t.audience}</p>
               <ul className="mt-5 grid flex-1 gap-2 text-[14px]">
                 {t.features.map((f) => (
@@ -450,6 +523,7 @@ function Tiers() {
               <Button className="mt-6" variant={featured ? 'primary' : 'secondary'} onClick={() => open({ type: 'start', tier: t.id })} disabled={current}>
                 {current ? 'Your current plan' : t.price === 0 ? 'Join free' : `Choose ${t.name}`}
               </Button>
+              <p className="mt-2 text-center text-[12px] text-muted">{t.price === 0 ? 'No card needed' : 'Cancel anytime · first meal 30% off'}</p>
             </Card>
           );
         })}
@@ -462,6 +536,8 @@ export function Overview() {
   return (
     <>
       <Hero />
+      <MenuStrip />
+      <HowItWorks />
       <Pillars />
       <RecoveryCalculator />
       <PodLocator />

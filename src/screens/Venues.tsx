@@ -5,6 +5,7 @@ import { MapCanvas } from '../components/MapCanvas';
 import { callTool, type BookingResult } from '../lib/mcp';
 import { useStore } from '../lib/store';
 import { meals, pods, venues, type Venue, type VenueId } from '../data/catalog';
+import { MealArt } from '../components/MealArt';
 
 const SLOTS = ['07:00', '08:00', '09:00', '10:00', '12:00', '14:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'];
 
@@ -125,7 +126,9 @@ function VenueDrawer({ venue, onClose }: { venue: Venue; onClose: () => void }) 
         <ul className="divide-y divide-hair">
           {stock.map(({ meal, count }) => (
             <li key={meal.id} className="flex items-center gap-3 py-2.5">
-              <span className="h-2.5 w-2.5 rounded-sm" style={{ background: meal.hue }} />
+              <span className="h-10 w-10 shrink-0 overflow-hidden rounded-lg">
+                <MealArt meal={meal.id} photo={meal.photo} alt="" />
+              </span>
               <span className="flex-1 text-[14px]">{meal.name}</span>
               <span className={cx('w-10 text-right text-[15px] font-semibold tabular-nums', count === 0 && 'text-alert')}>{count}</span>
               <Button size="sm" variant="secondary" disabled={count === 0} onClick={() => open({ type: 'reserve', mealId: meal.id, podId: pod.id })}>

@@ -1,4 +1,4 @@
-import { Activity, Building2, LayoutGrid, MapPin, Refrigerator, Salad } from 'lucide-react';
+import { Activity, Building2, LayoutGrid, MapPin, Refrigerator, Salad, ShoppingBag } from 'lucide-react';
 import { useStore, type Screen } from './lib/store';
 import { StatusDot, cx } from './components/ui';
 import { Footer } from './components/Footer';
@@ -11,6 +11,7 @@ import { McpInspector } from './modals/McpInspector';
 import { NfcUnlatch } from './modals/NfcUnlatch';
 import { MealReservation } from './modals/MealReservation';
 import { GetStarted } from './modals/GetStarted';
+import { MealDetail } from './modals/MealDetail';
 
 const NAV: { id: Screen; label: string; short: string; icon: typeof Activity }[] = [
   { id: 'overview', label: 'Overview', short: 'Overview', icon: LayoutGrid },
@@ -21,7 +22,7 @@ const NAV: { id: Screen; label: string; short: string; icon: typeof Activity }[]
 ];
 
 export default function App() {
-  const { screen, go, modal, open, health, healthError, profile } = useStore();
+  const { screen, go, modal, open, health, healthError, profile, reservations } = useStore();
   const mcpState = healthError ? 'down' : !health ? 'idle' : health.upstream.reachable ? 'ok' : 'warn';
 
   return (
@@ -50,6 +51,15 @@ export default function App() {
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-2">
+            {reservations.length > 0 && (
+              <button
+                onClick={() => go('dispensers')}
+                className="flex h-8 items-center gap-1.5 rounded-full bg-pulse-soft px-3 text-[13px] font-semibold text-pulse hover:brightness-95"
+              >
+                <ShoppingBag size={15} /> <span className="tabular-nums">{reservations.length}</span>
+                <span className="hidden sm:inline">My orders</span>
+              </button>
+            )}
             <button
               onClick={() => open({ type: 'mcp' })}
               className="flex items-center gap-2 rounded-full px-2.5 py-1.5 text-[12px] font-medium text-muted hover:bg-black/5"
@@ -99,6 +109,7 @@ export default function App() {
       {modal?.type === 'nfc' && <NfcUnlatch podId={modal.podId} passcode={modal.passcode} />}
       {modal?.type === 'reserve' && <MealReservation mealId={modal.mealId} podId={modal.podId} />}
       {modal?.type === 'start' && <GetStarted tier={modal.tier} />}
+      {modal?.type === 'meal' && <MealDetail mealId={modal.mealId} />}
     </div>
   );
 }

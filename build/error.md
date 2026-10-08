@@ -2,6 +2,18 @@
 
 Synchronised with every push. Newest first.
 
+## 2026-10-08 — v1.1.0 Meal imagery and conversion UX
+
+| # | Area | Error / symptom | Root cause | Fix | Status |
+|---|------|-----------------|------------|-----|--------|
+| 4 | Assets | Stock food photos could not be downloaded | Build environment network policy blocks images.unsplash.com, images.pexels.com and upload.wikimedia.org | Drew meal illustrations in SVG; added an optional `photo` field for real photos | Worked around |
+| 3 | UI · Snap & Calculate | Black bars beside the sample plate | Square SVG drawn inside a 4:3 frame | The frame background now matches the table colour | Fixed |
+
+### Verification
+- `npm run typecheck` and `npm run build`: clean
+- Headless Chromium end-to-end, including the new meal detail → Order once → confirm → My orders → Unlatch flow: no page errors
+- No horizontal overflow at 390 px and 1280 px
+
 ## 2026-10-08 — Add prompt.md
 
 Documentation only; no build or runtime errors.

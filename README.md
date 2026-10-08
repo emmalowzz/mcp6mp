@@ -27,6 +27,15 @@ curl -s -X POST localhost:3000/api/mcp -H 'content-type: application/json' \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"calculate_recovery_macros","arguments":{"weight_kg":68,"duration_min":75,"intensity":"high"}}}'
 ```
 
+## Meal photos
+
+Each meal has a drawn illustration (`src/components/MealArt.tsx`), so the site needs no external image host. To use real photos instead:
+
+1. Put the photos in `public/meals/`, e.g. `public/meals/sous-vide-salmon.jpg` (landscape, 4:3, at least 1200 px wide).
+2. In `src/data/catalog.ts`, add `photo: '/meals/sous-vide-salmon.jpg'` to that meal.
+
+The photo then replaces the illustration everywhere: menu cards, meal details, order pop-up, plan cards and pod stock lists.
+
 ## Configuration
 
 Optional, server-side only (see `.env.example`): `SMITHERY_API_KEY`. Never prefix secrets with `VITE_`.
