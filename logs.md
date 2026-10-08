@@ -2,6 +2,13 @@
 
 Synchronised with `/build/error.md` on every push.
 
+## 2026-10-08 — v1.5.0 `/api/mcp` status: "ok" or "not ok"
+
+- **`GET /api/mcp` and `/api/mcp.js`** now report a `status` of `"ok"` or `"not ok"`, overall and for each server: the ActiveNutri tool proxy, the Smithery gateway and NutriBalance. A server is ok only if it actually returns values, meaning a 2xx reply with at least one tool. Otherwise the check is not ok, with a reason.
+- **HTTP codes:** 200 when everything is ok, 503 when anything is not.
+- **Plain-text output:** `?format=text` returns lines like `ok NutriBalance · 5 tools`.
+- **Unchanged:** POST (JSON-RPC) behaviour and the tool manifest.
+
 ## 2026-10-08 — v1.4.0 My Daily Needs tab (NutriBalance MCP)
 
 - **New "My Daily Needs" tab:**

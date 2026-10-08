@@ -43,3 +43,7 @@ Attached: a screenshot of the Miro Business Model Canvas, saved as [`docs/miro-b
 ## 7. Add a daily-needs tab with NutriBalance
 
 > Please include a tab where it helps you put in your stats so that you can track and understand the user's personalised daily nutritional needs. It should use/integrate the MCP endpoint https://server.smithery.ai/NutriBalance/nutribalance-mcp
+
+## 8. Show "ok" or "not ok" on /api/mcp.js
+
+> update the /api/mcp.js to display the status of "ok" and "not ok " if the mcp is not returning any values

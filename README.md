@@ -17,7 +17,7 @@ npm run build && NODE_ENV=production npm start   # serves dist/
 | Route | Purpose |
 |-------|---------|
 | `GET/POST /api/health` | Smithery gateway reachability, latency, HTTP status, tools (4 s timeout; 200–499 = reachable) |
-| `GET /api/mcp` | Tool manifest |
+| `GET /api/mcp` | MCP status: `"ok"` or `"not ok"` (HTTP 200 / 503) per server and overall, plus the tool manifest. Add `?format=text` for plain text |
 | `POST /api/mcp` | MCP JSON-RPC 2.0: `initialize`, `tools/list`, `tools/call` |
 | `POST /api/nutrition` | My Daily Needs: `targets`, `food`, `score`, `plan`. Calls NutriBalance over MCP; falls back to built-in formulas |
 | `POST /api/tools` | Same handler as `/api/mcp`. This is the route the web app calls, so the front end never references MCP. |
@@ -43,6 +43,21 @@ The form, today's log and weight history are saved in the browser's localStorage
 If NutriBalance is unreachable, needs a key, or a call fails, the route answers from built-in formulas (Mifflin-St Jeor plus standard RDAs and a local food table). The page labels each result *Calculated by NutriBalance* or *ActiveNutri estimate*.
 
 ## Back-end MCP check
+
+### `GET /api/mcp` status
+
+```bash
+curl -s https://your-app.vercel.app/api/mcp?format=text
+not ok
+ok     ActiveNutri tool proxy · 3 tools
+not ok Smithery gateway (HTTP 403: no values returned)
+ok     NutriBalance · 5 tools
+```
+
+A server is **ok** only when it returns values: a successful (2xx) reply with at least one tool from `tools/list`. Anything else is **not ok**, with a reason: a timeout, a network error, a refusal such as 401/403, or a connection that returns no tools. The overall status is `ok` only when every check is ok, and the HTTP code is 200 for ok and 503 for not ok, so uptime monitors can watch it directly. This is stricter than `/api/health`, which follows the master prompt's rule that any 200–499 response proves the host is reachable.
+
+### `npm run check:mcp`
+
 
 The MCP gateway check is back-end only; the website never calls it or mentions it.
 

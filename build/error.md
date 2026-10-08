@@ -2,6 +2,17 @@
 
 Synchronised with every push. Newest first.
 
+## 2026-10-08 — v1.5.0 `/api/mcp` status: "ok" or "not ok"
+
+No build or runtime errors.
+
+### Verification
+- `npm run typecheck` and `npm run build`: clean
+- `GET /api/mcp?format=text` in the build sandbox, with both external servers blocked: overall `not ok` (HTTP 503). Proxy `ok · 3 tools`; Smithery and NutriBalance `not ok (HTTP 403: no values returned)`.
+- With NutriBalance pointed at a mock MCP server that returns tools: NutriBalance `ok · 5 tools`
+- With the mock returning an empty tool list: NutriBalance `not ok (Connected but returned no tools)`
+- `POST /api/mcp` `tools/list`: unchanged
+
 ## 2026-10-08 — v1.4.0 My Daily Needs tab (NutriBalance)
 
 | # | Area | Error / symptom | Root cause | Fix | Status |
