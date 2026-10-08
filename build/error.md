@@ -2,16 +2,9 @@
 
 Synchronised with every push. Newest first.
 
-## 2026-10-08 — v1.5.0 `/api/mcp` status: "ok" or "not ok"
+## 2026-10-08 — v1.4.1 Rebuilt from commit b9c1e8a
 
-No build or runtime errors.
-
-### Verification
-- `npm run typecheck` and `npm run build`: clean
-- `GET /api/mcp?format=text` in the build sandbox, with both external servers blocked: overall `not ok` (HTTP 503). Proxy `ok · 3 tools`; Smithery and NutriBalance `not ok (HTTP 403: no values returned)`.
-- With NutriBalance pointed at a mock MCP server that returns tools: NutriBalance `ok · 5 tools`
-- With the mock returning an empty tool list: NutriBalance `not ok (Connected but returned no tools)`
-- `POST /api/mcp` `tools/list`: unchanged
+No errors. App code matches `b9c1e8a`. Verified with `git diff b9c1e8a -- . ':!logs.md' ':!build/error.md' ':!prompt.md'` (empty), plus `npm run typecheck`, `npm run build` and the end-to-end browser tests.
 
 ## 2026-10-08 — v1.4.0 My Daily Needs tab (NutriBalance)
 

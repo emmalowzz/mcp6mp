@@ -47,3 +47,7 @@ Attached: a screenshot of the Miro Business Model Canvas, saved as [`docs/miro-b
 ## 8. Show "ok" or "not ok" on /api/mcp.js
 
 > update the /api/mcp.js to display the status of "ok" and "not ok " if the mcp is not returning any values
+
+## 9. Rebuild from an earlier commit
+
+> i want to do a rebuild using this github commit b9c1e8adc6a72e1046ff627ab4e1d51b5e85a0dc

@@ -3,9 +3,6 @@
 // The three ActiveNutri tools are simulated server-side: nothing is charged,
 // persisted or sent to third parties.
 
-import { probeSmithery } from './health.js';
-import { probeNutriBalance } from './nutrition.js';
-
 const PROTOCOL_VERSION = '2025-03-26';
 const SERVER_INFO = { name: 'activenutri-mcp-proxy', version: '1.0.0' };
 const GATEWAY = 'https://mcp.smithery.ai/emmalowzz';
@@ -226,48 +223,16 @@ function handleRpc(msg) {
   }
 }
 
-// GET status: "ok" only when an MCP server actually returns values (a successful reply with
-// at least one tool). Unreachable, refused (401/403), timed out or empty all count as "not ok".
-function verdict(name, endpoint, probe, tools) {
-  const toolCount = tools?.length || 0;
-  let reason = null;
-  if (probe.error) reason = probe.error;
-  else if (probe.httpStatus == null) reason = 'No response';
-  else if (probe.httpStatus < 200 || probe.httpStatus > 299) reason = `HTTP ${probe.httpStatus}: no values returned`;
-  else if (!toolCount) reason = 'Connected but returned no tools';
-  return { name, endpoint, status: reason ? 'not ok' : 'ok', httpStatus: probe.httpStatus ?? null, latencyMs: probe.latencyMs ?? null, toolCount, tools: tools || [], reason };
-}
-
-async function statusReport() {
-  const local = handleRpc({ jsonrpc: '2.0', id: 'status', method: 'tools/list' });
-  const localTools = (local?.result?.tools || []).map((t) => t.name);
-  const [smithery, nutri] = await Promise.all([probeSmithery(), probeNutriBalance()]);
-  const checks = [
-    { name: 'ActiveNutri tool proxy', endpoint: '/api/mcp', status: localTools.length ? 'ok' : 'not ok', httpStatus: 200, latencyMs: 0, toolCount: localTools.length, tools: localTools, reason: localTools.length ? null : 'No local tools registered' },
-    verdict('Smithery gateway', GATEWAY, smithery, smithery.remoteTools),
-    verdict('NutriBalance', nutri.endpoint, nutri, nutri.tools),
-  ];
-  return { status: checks.every((c) => c.status === 'ok') ? 'ok' : 'not ok', checkedAt: new Date().toISOString(), checks };
-}
-
 export default async function mcpProxyHandler(req, res) {
   setHeaders(res);
   if (req.method === 'OPTIONS') return res.status(204).end();
 
   if (req.method === 'GET') {
-    const report = await statusReport();
-    const url = new URL(req.url || '/', 'http://localhost');
-    res.status(report.status === 'ok' ? 200 : 503);
-    if (url.searchParams.get('format') === 'text') {
-      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-      const lines = [report.status, ...report.checks.map((c) => `${c.status.padEnd(6)} ${c.name}${c.reason ? ` (${c.reason})` : ` · ${c.toolCount} tools`}`)];
-      return res.end(lines.join('\n') + '\n');
-    }
-    return res.json({
-      ...report,
+    return res.status(200).json({
       server: SERVER_INFO,
       protocolVersion: PROTOCOL_VERSION,
       transport: 'POST JSON-RPC 2.0 to this URL',
+      gateway: GATEWAY,
       tools: TOOLS.map(({ name, description }) => ({ name, description })),
     });
   }

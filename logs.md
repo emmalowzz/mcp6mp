@@ -2,12 +2,11 @@
 
 Synchronised with `/build/error.md` on every push.
 
-## 2026-10-08 — v1.5.0 `/api/mcp` status: "ok" or "not ok"
+## 2026-10-08 — v1.4.1 Rebuilt from commit b9c1e8a
 
-- **`GET /api/mcp` and `/api/mcp.js`** now report a `status` of `"ok"` or `"not ok"`, overall and for each server: the ActiveNutri tool proxy, the Smithery gateway and NutriBalance. A server is ok only if it actually returns values, meaning a 2xx reply with at least one tool. Otherwise the check is not ok, with a reason.
-- **HTTP codes:** 200 when everything is ok, 503 when anything is not.
-- **Plain-text output:** `?format=text` returns lines like `ok NutriBalance · 5 tools`.
-- **Unchanged:** POST (JSON-RPC) behaviour and the tool manifest.
+- Rolled the code back to `b9c1e8adc6a72e1046ff627ab4e1d51b5e85a0dc` (v1.4.0, My Daily Needs tab with NutriBalance) by reverting `a0fe222`. History was not rewritten.
+- **Removed:** the v1.5.0 `"ok"` / `"not ok"` status on `GET /api/mcp`. `GET /api/mcp` returns the tool manifest again.
+- **To restore:** `git revert <this commit>`, or cherry-pick `a0fe222`.
 
 ## 2026-10-08 — v1.4.0 My Daily Needs tab (NutriBalance MCP)
 
