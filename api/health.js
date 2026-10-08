@@ -3,7 +3,7 @@
 // external Smithery MCP gateway and the NutriBalance MCP server. Runs as a Vercel function and as an Express
 // route (see server.ts). Credentials are read server-side only and never echoed.
 
-import { probeNutriBalance } from './nutrition.js';
+import { probeNutriBalance, refusalDetail, smitheryKey } from './nutrition.js';
 
 const SMITHERY_URL = 'https://mcp.smithery.ai/emmalowzz';
 const TIMEOUT_MS = 4000;
@@ -21,14 +21,36 @@ function setHeaders(res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
 
+let gatewayAuth = 'header'; // switches to 'query' (?api_key=) if the header is refused
+
+function gatewayUrl(mode = gatewayAuth) {
+  if (mode !== 'query' || !smitheryKey()) return SMITHERY_URL;
+  const u = new URL(SMITHERY_URL);
+  u.searchParams.set('api_key', smitheryKey());
+  if (process.env.SMITHERY_PROFILE) u.searchParams.set('profile', process.env.SMITHERY_PROFILE.trim());
+  return u.toString();
+}
+
+function gatewayHeaders(sessionId) {
+  const headers = { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' };
+  if (sessionId) headers['Mcp-Session-Id'] = sessionId;
+  if (smitheryKey()) headers.Authorization = `Bearer ${smitheryKey()}`;
+  return headers;
+}
+
 async function postJsonRpc(body, signal) {
-  const headers = {
-    'Content-Type': 'application/json',
-    Accept: 'application/json, text/event-stream',
-  };
-  const key = process.env.SMITHERY_API_KEY;
-  if (key) headers.Authorization = `Bearer ${key}`;
-  return fetch(SMITHERY_URL, { method: 'POST', headers, body: JSON.stringify(body), signal });
+  const send = (mode) => fetch(gatewayUrl(mode), { method: 'POST', headers: gatewayHeaders(), body: JSON.stringify(body), signal });
+  const res = await send(gatewayAuth);
+  if ((res.status === 401 || res.status === 403) && smitheryKey() && gatewayAuth === 'header') {
+    const retry = await send('query');
+    if (retry.status !== 401 && retry.status !== 403) {
+      await res.body?.cancel?.();
+      gatewayAuth = 'query';
+      return retry;
+    }
+    await retry.body?.cancel?.();
+  }
+  return res;
 }
 
 // Streamable HTTP servers may answer with SSE; pull the first JSON-RPC payload out.
@@ -58,6 +80,7 @@ export async function probeSmithery() {
     authenticated: false,
     serverInfo: null,
     remoteTools: [],
+    detail: null,
     error: null,
   };
 
@@ -85,21 +108,16 @@ export async function probeSmithery() {
       const payload = await readRpc(init);
       result.serverInfo = payload?.result?.serverInfo ?? null;
       const sessionId = init.headers.get('mcp-session-id');
-      const list = await fetch(SMITHERY_URL, {
+      const list = await fetch(gatewayUrl(), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json, text/event-stream',
-          ...(sessionId ? { 'Mcp-Session-Id': sessionId } : {}),
-          ...(process.env.SMITHERY_API_KEY ? { Authorization: `Bearer ${process.env.SMITHERY_API_KEY}` } : {}),
-        },
+        headers: gatewayHeaders(sessionId),
         body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} }),
         signal: controller.signal,
       });
       const tools = await readRpc(list);
       result.remoteTools = (tools?.result?.tools ?? []).map((t) => t.name).slice(0, 50);
     } else {
-      await init.body?.cancel?.();
+      result.detail = await refusalDetail(init);
     }
   } catch (err) {
     result.latencyMs = Date.now() - started;
@@ -127,6 +145,6 @@ export default async function healthHandler(req, res) {
     nutribalance,
     proxy: { endpoint: '/api/mcp', tools: LOCAL_TOOLS },
     nutrition: { endpoint: '/api/nutrition', actions: NUTRITION_ACTIONS, fallback: 'built-in estimate when NutriBalance is unreachable' },
-    credentialConfigured: Boolean(process.env.SMITHERY_API_KEY),
+    credentialConfigured: Boolean(smitheryKey()),
   });
 }

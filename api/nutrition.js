@@ -13,11 +13,33 @@ const TOOL_CACHE_MS = 5 * 60 * 1000;
 
 // ---------------------------------------------------------------- MCP client
 
+// Pasted keys often carry spaces or quotes; strip them.
+export const smitheryKey = () => (process.env.SMITHERY_API_KEY || '').trim().replace(/^['"]+|['"]+$/g, '').trim();
+
 function headers(sessionId) {
   const h = { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' };
   if (sessionId) h['Mcp-Session-Id'] = sessionId;
-  if (process.env.SMITHERY_API_KEY) h.Authorization = `Bearer ${process.env.SMITHERY_API_KEY}`;
+  if (smitheryKey()) h.Authorization = `Bearer ${smitheryKey()}`;
   return h;
+}
+
+// Smithery-hosted servers may want the key in the URL (?api_key=…&profile=…) instead of a header.
+function withQueryAuth(url) {
+  const u = new URL(url);
+  u.searchParams.set('api_key', smitheryKey());
+  if (process.env.SMITHERY_PROFILE) u.searchParams.set('profile', process.env.SMITHERY_PROFILE.trim());
+  return u.toString();
+}
+
+// Response text for diagnostics, with the key masked.
+export async function refusalDetail(res) {
+  try {
+    const text = (await res.text()).replace(/\s+/g, ' ').trim().slice(0, 240);
+    const key = smitheryKey();
+    return key ? text.split(key).join('***') : text;
+  } catch {
+    return null;
+  }
 }
 
 async function readRpc(res) {
@@ -40,12 +62,14 @@ async function readRpc(res) {
 
 // The URL that actually answered; may gain a '/mcp' suffix (see postInit).
 let activeUrl = NUTRIBALANCE_URL;
+// 'header' = Authorization: Bearer; 'query' = ?api_key= (switched to automatically on 401/403).
+let authMode = 'header';
 
-async function post(body, sessionId, url = activeUrl) {
+async function post(body, sessionId, url = activeUrl, mode = authMode) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
-    return await fetch(url, { method: 'POST', headers: headers(sessionId), body: JSON.stringify(body), signal: controller.signal });
+    return await fetch(mode === 'query' && smitheryKey() ? withQueryAuth(url) : url, { method: 'POST', headers: headers(sessionId), body: JSON.stringify(body), signal: controller.signal });
   } finally {
     clearTimeout(timer);
   }
@@ -54,16 +78,29 @@ async function post(body, sessionId, url = activeUrl) {
 // Smithery-hosted servers are often served at '<url>/mcp'. If the configured URL answers
 // 404/405, try that once and remember whichever one works.
 async function postInit(body) {
-  const res = await post(body);
+  let res = await post(body);
+  // 1) Path: try '<url>/mcp' once if the configured URL is not found.
   if ((res.status === 404 || res.status === 405) && !/\/mcp\/?$/.test(activeUrl)) {
     const alt = `${activeUrl.replace(/\/+$/, '')}/mcp`;
     const retry = await post(body, undefined, alt);
     if (retry.status !== 404 && retry.status !== 405) {
       await res.body?.cancel?.();
       activeUrl = alt;
-      return retry;
+      res = retry;
+    } else {
+      await retry.body?.cancel?.();
     }
-    await retry.body?.cancel?.();
+  }
+  // 2) Auth: if the Bearer header is refused, try the key as ?api_key= once.
+  if ((res.status === 401 || res.status === 403) && smitheryKey() && authMode === 'header') {
+    const retry = await post(body, undefined, activeUrl, 'query');
+    if (retry.status !== 401 && retry.status !== 403) {
+      await res.body?.cancel?.();
+      authMode = 'query';
+      res = retry;
+    } else {
+      await retry.body?.cancel?.();
+    }
   }
   return res;
 }
@@ -76,7 +113,10 @@ async function session() {
     method: 'initialize',
     params: { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'activenutri', version: '1.4.0' } },
   });
-  if (!init.ok) throw new Error(`NutriBalance answered HTTP ${init.status}`);
+  if (!init.ok) {
+    const detail = await refusalDetail(init);
+    throw new Error(`NutriBalance answered HTTP ${init.status}${detail ? `: ${detail}` : ''}`);
+  }
   const payload = await readRpc(init);
   if (payload?.error) throw new Error(payload.error.message);
   const sessionId = init.headers.get('mcp-session-id') || undefined;
@@ -492,15 +532,24 @@ const actions = {
 
 export async function probeNutriBalance() {
   const started = Date.now();
-  const out = { endpoint: NUTRIBALANCE_URL, reachable: false, httpStatus: null, latencyMs: null, tools: [], error: null };
+  const out = { endpoint: NUTRIBALANCE_URL, reachable: false, httpStatus: null, latencyMs: null, keyConfigured: Boolean(smitheryKey()), authMode: null, tools: [], detail: null, hint: null, error: null };
   try {
     const res = await postInit({ jsonrpc: '2.0', id: 0, method: 'initialize', params: { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'activenutri-health', version: '1.4.0' } } });
     out.endpoint = activeUrl;
     out.latencyMs = Date.now() - started;
     out.httpStatus = res.status;
     out.reachable = res.status >= 200 && res.status <= 499;
-    await res.body?.cancel?.();
-    if (res.ok) out.tools = (await tools()).tools.map((t) => t.name);
+    out.authMode = out.keyConfigured ? authMode : 'none';
+    if (res.ok) {
+      await res.body?.cancel?.();
+      out.tools = (await tools()).tools.map((t) => t.name);
+    } else {
+      out.detail = await refusalDetail(res);
+      if (res.status === 401 || res.status === 403)
+        out.hint = out.keyConfigured
+          ? 'Key was sent (as a Bearer header and as ?api_key=) and refused. Check it is a current Smithery API key from smithery.ai/account/api-keys with access to this server; if the server needs a profile, set SMITHERY_PROFILE. Then redeploy.'
+          : 'No key reached this deployment. In Vercel set SMITHERY_API_KEY for Production (exact name, no quotes), then redeploy.';
+    }
   } catch (err) {
     out.latencyMs = Date.now() - started;
     out.error = err?.name === 'AbortError' ? `Timed out after ${TIMEOUT_MS} ms` : err.message || 'Network error';

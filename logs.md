@@ -2,6 +2,13 @@
 
 Synchronised with `/build/error.md` on every push.
 
+## 2026-10-08 — v1.4.3 Fix NutriBalance 401: key clean-up, URL-key fallback, diagnostics
+
+- **Key clean-up:** `SMITHERY_API_KEY` is trimmed of spaces and quotes before use.
+- **URL-key fallback:** if the Bearer header gets 401/403, the client retries once with `?api_key=` (and `&profile=` from the new optional `SMITHERY_PROFILE`), then remembers the working method. This applies to both NutriBalance and the Smithery gateway check.
+- **Bug fixed:** the earlier `/mcp` path fallback returned too early and skipped the auth retry. Both fallbacks now apply in order.
+- **Diagnostics:** the `nutribalance` block in `/api/health` now shows `keyConfigured`, `authMode`, `detail` (the server's refusal message with the key masked) and a `hint` on the next step. The gateway block shows `detail` too.
+
 ## 2026-10-08 — v1.4.2 Smithery key support check and `/mcp` fallback
 
 - **Confirmed:** `SMITHERY_API_KEY` (set in Vercel) is sent as `Authorization: Bearer …` to NutriBalance and the Smithery gateway, server-side only. It is never returned to the browser.

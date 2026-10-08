@@ -2,6 +2,25 @@
 
 Synchronised with every push. Newest first.
 
+## 2026-10-08 — v1.4.3 NutriBalance HTTP 401 on the Vercel deployment
+
+| # | Area | Error / symptom | Likely cause | Fix | Status |
+|---|------|-----------------|--------------|-----|--------|
+| 9 | NutriBalance auth | `/api/health` → `nutribalance.httpStatus: 401` after adding the key in Vercel | (a) the key is not in the running deployment (not redeployed, wrong name, or Preview only); (b) Smithery expects the key as `?api_key=` rather than a Bearer header; (c) stray spaces or quotes in the key | Trim the key; retry with `?api_key=` (+ `SMITHERY_PROFILE`) on 401/403; health shows `keyConfigured`, `authMode`, the server's `detail` and a `hint` | Fixed in code; confirm on the deployment |
+| 9b | NutriBalance client | The `/mcp` fallback returned before the auth retry ran | Early `return` in `postInit` | Fallbacks now chain | Fixed |
+
+### Verification (strict mock MCP servers)
+| Server accepts | Key given | Result |
+|---|---|---|
+| `?api_key=` only | correct | 200, `authMode: query`, 5 tools; all four actions from NutriBalance |
+| `?api_key=` only | `" 'test-key' "` (spaces and quotes) | 200 |
+| `?api_key=` only | wrong | 401, `detail` with Smithery-style message, hint to check the key |
+| `?api_key=` only | none | 401, hint "No key reached this deployment…" |
+| Bearer only | correct | 200, `authMode: header`; all four actions from NutriBalance |
+
+- Fake key `sk-SECRET-123` set: 0 occurrences in the `/api/health` output
+- `npm run typecheck`, `npm run build` and the browser regression: clean
+
 ## 2026-10-08 — v1.4.2 Smithery key support check and `/mcp` fallback
 
 | # | Area | Risk | Fix | Status |

@@ -55,3 +55,7 @@ Attached: a screenshot of the Miro Business Model Canvas, saved as [`docs/miro-b
 ## 10. Smithery key added in Vercel
 
 > i have included my Smithery MCP API key in Vercel environment variables.
+
+## 11. Fix the NutriBalance 401
+
+> why nutribalance httpstatus 401? please help fix or tell me how to fix

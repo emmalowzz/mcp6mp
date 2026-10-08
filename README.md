@@ -40,7 +40,11 @@ The form, today's log and weight history are saved in the browser's localStorage
 3. It fills that tool's arguments from its own `inputSchema`. For example, `moderate` is matched to an `activity_level` option such as `moderately_active`, and the calorie target goes to a field such as `calorie_goal`.
 4. It normalises the reply and rejects implausible numbers.
 
-**Smithery key:** set `SMITHERY_API_KEY` in Vercel (Project → Settings → Environment Variables, Production), then redeploy. The key is sent as `Authorization: Bearer …` on server-side calls only. If the configured URL answers 404 or 405, the client retries once at `<url>/mcp` and keeps whichever works.
+**Smithery key:** set `SMITHERY_API_KEY` in Vercel (Project → Settings → Environment Variables, Production), then redeploy. The key is trimmed of stray spaces and quotes, then sent server-side only as `Authorization: Bearer …`. If that is refused (401/403), the client retries once with the key in the URL (`?api_key=…`, plus `&profile=…` when `SMITHERY_PROFILE` is set) and keeps whichever method works. If the configured URL answers 404 or 405, it retries once at `<url>/mcp`.
+
+**Troubleshooting a 401/403:** open `/api/health` and read the `nutribalance` block. The key itself is never shown.
+- `keyConfigured: false`: the key did not reach this deployment. Check the exact name `SMITHERY_API_KEY`, that it is enabled for **Production**, and that you redeployed afterwards.
+- `keyConfigured: true` with 401/403: the key was refused both ways. `detail` shows Smithery's own message. Create a fresh key at smithery.ai (account → API keys), make sure the NutriBalance server is enabled/connected for your account, set `SMITHERY_PROFILE` if its page lists one, then redeploy.
 
 If NutriBalance is unreachable, needs a key, or a call fails, the route answers from built-in formulas (Mifflin-St Jeor plus standard RDAs and a local food table). The page labels each result *Calculated by NutriBalance* or *ActiveNutri estimate*.
 
