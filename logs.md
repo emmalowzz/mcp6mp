@@ -2,6 +2,20 @@
 
 Synchronised with `/build/error.md` on every push.
 
+## 2026-10-08 — v1.4.0 My Daily Needs tab (NutriBalance MCP)
+
+- **New "My Daily Needs" tab:**
+  - **Stats form:** age, sex, height, weight, activity, training today, goal, diet.
+  - **Daily targets:** calories with BMR and TDEE, a macro donut, water, fibre, and eight micronutrients.
+  - **Weight trend:** recorded each time you recalculate.
+  - **Today's tracker:** food lookup by name and grams, one-tap quick add of ActiveNutri meals, and progress bars for calories, protein, carbs, fat, fibre and sodium.
+  - **Score my day:** a 0–100 score, a grade and priorities.
+  - **Plan my day,** plus "Meals that fit what's left" with Order buttons.
+  - **Storage:** saved in localStorage only.
+- **New `/api/nutrition` route** (`api/nutrition.js` and an Express route): a server-side MCP client for NutriBalance (`https://server.smithery.ai/NutriBalance/nutribalance-mcp`, overridable with `NUTRIBALANCE_MCP_URL`). It finds tools at runtime, maps inputs from each tool's schema, and falls back to built-in formulas. Every result is labelled with its source.
+- **Health check:** `/api/health` and `npm run check:mcp` now probe NutriBalance as well. `check:mcp` warns on any 401/403.
+- **Navigation:** the desktop nav shows from 1024 px; the bottom tab bar has six tabs (Overview, Meals, Needs, Venues, Pods, Partners).
+
 ## 2026-10-08 — v1.3.0 Simpler For Partners page
 
 - **For Partners is now just the partner inquiry form:** the circular revenue model, stakeholder cards, unit-economics calculator and on-page Business Model Canvas are gone. The form keeps its three steps and has a short intro.

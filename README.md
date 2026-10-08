@@ -19,9 +19,28 @@ npm run build && NODE_ENV=production npm start   # serves dist/
 | `GET/POST /api/health` | Smithery gateway reachability, latency, HTTP status, tools (4 s timeout; 200–499 = reachable) |
 | `GET /api/mcp` | Tool manifest |
 | `POST /api/mcp` | MCP JSON-RPC 2.0: `initialize`, `tools/list`, `tools/call` |
+| `POST /api/nutrition` | My Daily Needs: `targets`, `food`, `score`, `plan`. Calls NutriBalance over MCP; falls back to built-in formulas |
 | `POST /api/tools` | Same handler as `/api/mcp`. This is the route the web app calls, so the front end never references MCP. |
 
 The same handlers in `api/` run as Vercel functions and as Express routes (`server.ts`).
+
+## My Daily Needs and NutriBalance
+
+The **My Daily Needs** tab takes a person's stats (age, sex, height, weight, activity, training today, goal, diet) and returns:
+- daily calories (BMR, TDEE, target), macros, water, fibre and key micronutrients
+- a food log with progress bars against those targets
+- a 0–100 daily score with priorities
+- a suggested day of meals, plus ActiveNutri meals that fit the calories left
+
+The form, today's log and weight history are saved in the browser's localStorage only.
+
+`api/nutrition.js` is an MCP client for NutriBalance (`NUTRIBALANCE_MCP_URL`, default `https://server.smithery.ai/NutriBalance/nutribalance-mcp`):
+1. It opens a Streamable HTTP session and runs `tools/list` (cached for 5 minutes).
+2. It picks the right tool for each job by name and description (TDEE/macros, food lookup, daily score, meal plan).
+3. It fills that tool's arguments from its own `inputSchema`. For example, `moderate` is matched to an `activity_level` option such as `moderately_active`, and the calorie target goes to a field such as `calorie_goal`.
+4. It normalises the reply and rejects implausible numbers.
+
+If NutriBalance is unreachable, needs a key, or a call fails, the route answers from built-in formulas (Mifflin-St Jeor plus standard RDAs and a local food table). The page labels each result *Calculated by NutriBalance* or *ActiveNutri estimate*.
 
 ## Back-end MCP check
 
@@ -33,7 +52,7 @@ npm run check:mcp -- https://your-app.vercel.app    # ask a deployed server's /a
 curl -s https://your-app.vercel.app/api/health      # raw JSON report
 ```
 
-`check:mcp` exits with 0 when the gateway is reachable (any HTTP 200–499 response) and 1 otherwise, so it can run in CI or a cron job.
+`check:mcp` probes both the Smithery gateway and NutriBalance. It exits with 0 when both are reachable (any HTTP 200–499 response) and 1 otherwise, so it can run in CI or a cron job.
 
 ```bash
 curl -s -X POST localhost:3000/api/mcp -H 'content-type: application/json' \

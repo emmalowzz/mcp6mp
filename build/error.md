@@ -2,6 +2,21 @@
 
 Synchronised with every push. Newest first.
 
+## 2026-10-08 — v1.4.0 My Daily Needs tab (NutriBalance)
+
+| # | Area | Error / symptom | Root cause | Fix | Status |
+|---|------|-----------------|------------|-----|--------|
+| 7 | Diagnosis | Earlier logs said Smithery answered `403` because no key was set | The 403 actually came from the build sandbox's egress proxy (`connect_rejected` for `*.smithery.ai`); Smithery was never reached | Corrected the v1.0.0 note. `check:mcp` now prints a warning on any 401/403 | Fixed |
+| 6 | Integration | Could not read NutriBalance's tool list during the build | Sandbox blocks `server.smithery.ai`, `smithery.ai`, `mcp.so` and `nutribalance-mcp.vercel.app`; npm has no `nutribalance-mcp` package | Tools are found and mapped at runtime from the server's own `tools/list` and `inputSchema`. Tested against a local mock MCP server; falls back to built-in formulas | Worked around; needs a live check after deploy |
+| 5 | UI · header | Desktop nav labels wrapped onto two lines at 768–1023 px once a sixth tab was added | Not enough room for six labels | Desktop nav now starts at 1024 px with the bottom tab bar below that; labels and buttons set to `nowrap` | Fixed |
+| 4b | UI · My Daily Needs | Food-name input collapsed while the grams input stretched | Conflicting `w-full` and `w-24` utilities | Each input sits in its own sized wrapper | Fixed |
+
+### Verification
+- `npm run typecheck` and `npm run build`: clean
+- `/api/nutrition` against a mock NutriBalance MCP server (session ids, SSE replies, schema names unlike ours): all four actions used NutriBalance tools with correctly mapped arguments (`activity_level: moderately_active`, `goal: lose_weight`, `calorie_goal: 1744`, `foods: [...]`)
+- Same flow against the real URL (blocked here): every action fell back to built-in formulas and was labelled *ActiveNutri estimate*
+- Headless Chromium, desktop and 390 px: calculate → add food → quick add → score → plan → reload (data kept). No page errors; browser called only `/api/nutrition`. Full regression of all other flows passed.
+
 ## 2026-10-08 — v1.3.0 Simpler For Partners page
 
 No build or runtime errors.
@@ -52,4 +67,4 @@ Documentation only; no build or runtime errors.
 - No horizontal overflow at 390 px and 1280 px
 
 ### Known conditions (not errors)
-- The Smithery gateway answers `403` without a server-side `SMITHERY_API_KEY`. Per spec, any 200–499 counts as reachable, so status shows **online / not authenticated**.
+- ~~The Smithery gateway answers `403` without a server-side `SMITHERY_API_KEY`.~~ **Corrected in v1.4.0:** that 403 came from the build sandbox's egress proxy, not from Smithery. The real gateway response is unverified until the check runs from a deployment.

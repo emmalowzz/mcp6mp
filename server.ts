@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import healthHandler from './api/health.js';
 import mcpProxyHandler from './api/mcp.js';
+import nutritionHandler from './api/nutrition.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isProd = process.env.NODE_ENV === 'production';
@@ -23,6 +24,7 @@ app.use((_req, res, next) => {
 app.all(['/api/health.js', '/api/health'], healthHandler);
 app.all(['/api/mcp.js', '/api/mcp'], mcpProxyHandler);
 app.all(['/api/tools.js', '/api/tools'], mcpProxyHandler);
+app.all(['/api/nutrition.js', '/api/nutrition'], nutritionHandler);
 
 if (!isProd) {
   const { createServer } = await import('vite');

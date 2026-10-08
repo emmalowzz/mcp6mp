@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import type { MealId } from '../data/catalog';
 
-export type Screen = 'overview' | 'nutrition' | 'venues' | 'dispensers' | 'partners';
+export type Screen = 'overview' | 'nutrition' | 'needs' | 'venues' | 'dispensers' | 'partners';
 
 export type ModalState =
   | { type: 'nfc'; podId?: string; passcode?: string }

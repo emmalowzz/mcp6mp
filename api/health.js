@@ -1,12 +1,15 @@
 // GET/POST /api/health
 // Reports reachability, latency, HTTP status and tool capabilities of the
-// external Smithery MCP gateway. Runs as a Vercel function and as an Express
+// external Smithery MCP gateway and the NutriBalance MCP server. Runs as a Vercel function and as an Express
 // route (see server.ts). Credentials are read server-side only and never echoed.
+
+import { probeNutriBalance } from './nutrition.js';
 
 const SMITHERY_URL = 'https://mcp.smithery.ai/emmalowzz';
 const TIMEOUT_MS = 4000;
 
 const LOCAL_TOOLS = ['activesg_book_court', 'calculate_recovery_macros', 'dispenser_claim_locker'];
+const NUTRITION_ACTIONS = ['targets', 'food', 'score', 'plan'];
 
 function setHeaders(res) {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -115,13 +118,15 @@ export default async function healthHandler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const upstream = await probeSmithery();
+  const [upstream, nutribalance] = await Promise.all([probeSmithery(), probeNutriBalance()]);
   return res.status(200).json({
     service: 'activenutri',
-    status: upstream.reachable ? 'online' : 'degraded',
+    status: upstream.reachable && nutribalance.reachable ? 'online' : 'degraded',
     checkedAt: new Date().toISOString(),
     upstream,
+    nutribalance,
     proxy: { endpoint: '/api/mcp', tools: LOCAL_TOOLS },
+    nutrition: { endpoint: '/api/nutrition', actions: NUTRITION_ACTIONS, fallback: 'built-in estimate when NutriBalance is unreachable' },
     credentialConfigured: Boolean(process.env.SMITHERY_API_KEY),
   });
 }

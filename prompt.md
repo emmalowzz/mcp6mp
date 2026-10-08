@@ -39,3 +39,7 @@ Attached: a screenshot of the Miro Business Model Canvas, saved as [`docs/miro-b
 ## 6. Simplify For Partners
 
 > keep the "for partners" tab simple, remove all features except the "Partner inquiry" portion
+
+## 7. Add a daily-needs tab with NutriBalance
+
+> Please include a tab where it helps you put in your stats so that you can track and understand the user's personalised daily nutritional needs. It should use/integrate the MCP endpoint https://server.smithery.ai/NutriBalance/nutribalance-mcp
