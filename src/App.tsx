@@ -1,13 +1,12 @@
 import { Activity, Building2, LayoutGrid, MapPin, Refrigerator, Salad, ShoppingBag } from 'lucide-react';
 import { useStore, type Screen } from './lib/store';
-import { StatusDot, cx } from './components/ui';
+import { cx } from './components/ui';
 import { Footer } from './components/Footer';
 import { Overview } from './screens/Overview';
 import { Nutrition } from './screens/Nutrition';
 import { Venues } from './screens/Venues';
 import { Dispensers } from './screens/Dispensers';
 import { Partners } from './screens/Partners';
-import { McpInspector } from './modals/McpInspector';
 import { NfcUnlatch } from './modals/NfcUnlatch';
 import { MealReservation } from './modals/MealReservation';
 import { GetStarted } from './modals/GetStarted';
@@ -22,8 +21,7 @@ const NAV: { id: Screen; label: string; short: string; icon: typeof Activity }[]
 ];
 
 export default function App() {
-  const { screen, go, modal, open, health, healthError, profile, reservations } = useStore();
-  const mcpState = healthError ? 'down' : !health ? 'idle' : health.upstream.reachable ? 'ok' : 'warn';
+  const { screen, go, modal, open, profile, reservations } = useStore();
 
   return (
     <div className="min-h-screen pb-20 md:pb-0">
@@ -61,14 +59,6 @@ export default function App() {
               </button>
             )}
             <button
-              onClick={() => open({ type: 'mcp' })}
-              className="flex items-center gap-2 rounded-full px-2.5 py-1.5 text-[12px] font-medium text-muted hover:bg-black/5"
-              aria-label="Open MCP status inspector"
-            >
-              <StatusDot state={mcpState} />
-              <span className="hidden sm:inline">MCP</span>
-            </button>
-            <button
               onClick={() => open({ type: 'start' })}
               className="h-8 rounded-full bg-pulse px-3.5 text-[13px] font-semibold text-white hover:brightness-110"
             >
@@ -105,7 +95,6 @@ export default function App() {
         ))}
       </nav>
 
-      {modal?.type === 'mcp' && <McpInspector />}
       {modal?.type === 'nfc' && <NfcUnlatch podId={modal.podId} passcode={modal.passcode} />}
       {modal?.type === 'reserve' && <MealReservation mealId={modal.mealId} podId={modal.podId} />}
       {modal?.type === 'start' && <GetStarted tier={modal.tier} />}

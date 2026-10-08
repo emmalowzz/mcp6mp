@@ -1,5 +1,3 @@
-import { useStore } from '../lib/store';
-
 const notes = [
   {
     title: 'Health Promotion Board (HPB)',
@@ -15,12 +13,11 @@ const notes = [
   },
   {
     title: 'PDPA',
-    body: 'Profile, training and biometric data stay in your browser session in this demo. Nothing is stored server-side; external MCP calls are proxied through /api so no credentials reach your device.',
+    body: 'Profile, training and biometric data stay in your browser session in this demo. Nothing is stored server-side, and no partner credentials ever reach your device.',
   },
 ];
 
 export function Footer() {
-  const { open } = useStore();
   return (
     <footer className="border-t border-black/5 bg-white/60">
       <div className="mx-auto max-w-6xl px-4 py-10">
@@ -35,10 +32,7 @@ export function Footer() {
         </div>
         <div className="mt-8 flex flex-col gap-2 border-t border-black/5 pt-5 text-[12px] text-muted sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © 2026 ActiveNutri · Integrations: ActiveSG, OneMap SG, SFA cloud kitchens, Smithery MCP gateway.{' '}
-            <button onClick={() => open({ type: 'mcp' })} className="text-link hover:underline">
-              Check MCP status
-            </button>
+            © 2026 ActiveNutri · Integrations: ActiveSG, OneMap SG, SFA cloud kitchens.
           </p>
           <p>
             Business Model Canvas template by Strategyzer AG,{' '}

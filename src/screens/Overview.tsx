@@ -3,7 +3,7 @@ import { ArrowRight, Calculator, Check, Droplets, Flame, HeartPulse, LocateFixed
 import { Button, Card, Donut, Field, MacroLegend, SectionHeader, Segmented, inputCls, cx } from '../components/ui';
 import { MapCanvas } from '../components/MapCanvas';
 import { useStore, sgd } from '../lib/store';
-import { callTool, type RecoveryResult } from '../lib/mcp';
+import { callTool, type RecoveryResult } from '../lib/api';
 import { ATHLETE_PER_MEAL, avgMealPrice, distanceKm, mealById, meals, pods, tiers, venues, type MealId, type Region, type VenueId } from '../data/catalog';
 import { MealArt } from '../components/MealArt';
 import { MealCard } from '../components/MealCard';
@@ -249,7 +249,7 @@ function RecoveryCalculator() {
       <SectionHeader
         eyebrow="Post-workout recovery calculator"
         title="What should you eat after today’s session?"
-        sub="Computed server-side by the calculate_recovery_macros MCP tool, then matched to a meal waiting in the pod at your venue."
+        sub="Tell us about today’s session and we’ll work out your recovery targets, then match a meal waiting in the pod at your venue."
       />
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         <Card>
@@ -299,7 +299,7 @@ function RecoveryCalculator() {
             <Button onClick={calculate} disabled={loading}>
               {loading ? 'Calculating…' : 'Calculate my recovery'}
             </Button>
-            {error && <p className="text-[13px] text-alert">Couldn’t reach /api/mcp: {error}</p>}
+            {error && <p className="text-[13px] text-alert">Couldn’t calculate right now: {error}. Please try again.</p>}
           </div>
         </Card>
 

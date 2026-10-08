@@ -2,6 +2,14 @@
 
 Synchronised with `/build/error.md` on every push.
 
+## 2026-10-08 — v1.2.0 MCP check moved to the back end only
+
+- **Removed from the website:** the header MCP status button, the MCP Status Inspector pop-up, the "Live MCP connection" card, the footer "Check MCP status" link and Smithery mention, and on-screen mentions of MCP tools or `/api/mcp`.
+- **No browser health checks:** the website no longer polls `/api/health`. The Smart Dispensers card slot now shows pod status (stock, restock times, region).
+- **New `/api/tools` route:** the web app now calls `/api/tools` (`api/tools.js` plus an Express route), which uses the same handler as `/api/mcp`. `/api/mcp` and `/api/health` are unchanged for back-end use.
+- **New back-end check:** `npm run check:mcp` (`scripts/check-mcp.js`) checks the gateway directly or through a deployment's `/api/health`, and exits 0 or 1.
+- **Renamed:** `src/lib/mcp.ts` is now `src/lib/api.ts`.
+
 ## 2026-10-08 — v1.1.0 More appealing meals and clearer ordering
 
 - **Meal illustrations:** each of the four meals now has a detailed top-down illustration (`src/components/MealArt.tsx`). An optional `photo` field swaps in a real photo (see README).

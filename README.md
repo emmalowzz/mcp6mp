@@ -19,8 +19,21 @@ npm run build && NODE_ENV=production npm start   # serves dist/
 | `GET/POST /api/health` | Smithery gateway reachability, latency, HTTP status, tools (4 s timeout; 200–499 = reachable) |
 | `GET /api/mcp` | Tool manifest |
 | `POST /api/mcp` | MCP JSON-RPC 2.0: `initialize`, `tools/list`, `tools/call` |
+| `POST /api/tools` | Same handler as `/api/mcp`. This is the route the web app calls, so the front end never references MCP. |
 
 The same handlers in `api/` run as Vercel functions and as Express routes (`server.ts`).
+
+## Back-end MCP check
+
+The MCP gateway check is back-end only; the website never calls it or mentions it.
+
+```bash
+npm run check:mcp                                   # probe the Smithery gateway directly from this machine
+npm run check:mcp -- https://your-app.vercel.app    # ask a deployed server's /api/health
+curl -s https://your-app.vercel.app/api/health      # raw JSON report
+```
+
+`check:mcp` exits with 0 when the gateway is reachable (any HTTP 200–499 response) and 1 otherwise, so it can run in CI or a cron job.
 
 ```bash
 curl -s -X POST localhost:3000/api/mcp -H 'content-type: application/json' \

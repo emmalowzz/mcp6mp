@@ -22,6 +22,7 @@ app.use((_req, res, next) => {
 
 app.all(['/api/health.js', '/api/health'], healthHandler);
 app.all(['/api/mcp.js', '/api/mcp'], mcpProxyHandler);
+app.all(['/api/tools.js', '/api/tools'], mcpProxyHandler);
 
 if (!isProd) {
   const { createServer } = await import('vite');

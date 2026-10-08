@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Nfc, RefreshCw, Search, Snowflake, Flame } from 'lucide-react';
+import { Nfc, Search, Snowflake, Flame } from 'lucide-react';
 import { Button, Card, SectionHeader, Segmented, Sparkline, StatusDot, inputCls, cx } from '../components/ui';
 import { useStore } from '../lib/store';
 import { mealById, pods, type Pod, type Region } from '../data/catalog';
@@ -67,40 +67,39 @@ function ZoneCard({ kind, podId }: { kind: 'cryo' | 'thermal'; podId: string }) 
   );
 }
 
-function McpStatusCard() {
-  const { health, healthError, healthLoading, refreshHealth, open } = useStore();
-  const up = health?.upstream;
-  const state = healthError ? 'down' : !health ? 'idle' : up?.reachable ? 'ok' : 'warn';
+function PodStatusCard({ pod }: { pod: Pod }) {
+  const pct = Math.round((pod.stock / pod.capacity) * 100);
+  const n = Number(pod.id.slice(4));
+  const restocked = `${String(5 + (n % 3)).padStart(2, '0')}:${n % 2 ? '30' : '45'}`;
+  const next = `${String(14 + (n % 3)).padStart(2, '0')}:${n % 2 ? '00' : '15'}`;
   return (
     <Card className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
-        <StatusDot state={state} />
-        <p className="text-[15px] font-semibold">Live MCP connection</p>
-        <button onClick={refreshHealth} aria-label="Refresh MCP status" className="ml-auto grid h-8 w-8 place-items-center rounded-full hover:bg-black/5">
-          <RefreshCw size={15} className={cx(healthLoading && 'animate-spin')} />
-        </button>
+        <StatusDot state={pod.status === 'online' ? 'ok' : pod.status === 'restocking' ? 'warn' : 'down'} />
+        <p className="text-[15px] font-semibold">Pod status</p>
+        <span className="ml-auto text-[12px] capitalize text-muted">{pod.status}</span>
       </div>
-      <dl className="grid grid-cols-2 gap-3 text-[12px]">
+      <p className="headline text-[56px] font-bold tabular-nums">
+        {pod.stock}
+        <span className="text-[24px] text-muted">/{pod.capacity}</span>
+      </p>
+      <div className="h-2 overflow-hidden rounded-full bg-black/5">
+        <div className="h-full rounded-full bg-pulse transition-all" style={{ width: `${pct}%` }} />
+      </div>
+      <dl className="grid grid-cols-3 gap-2 border-t border-hair pt-3 text-[12px]">
         <div>
-          <dt className="text-muted">Smithery gateway</dt>
-          <dd className="text-[15px] font-semibold">{healthError ? 'API unreachable' : !up ? 'Checking…' : up.reachable ? 'Reachable' : 'Unreachable'}</dd>
+          <dt className="text-muted">Restocked</dt>
+          <dd className="text-[15px] font-semibold tabular-nums">{pod.status === 'maintenance' ? '—' : restocked}</dd>
         </div>
         <div>
-          <dt className="text-muted">Latency</dt>
-          <dd className="text-[15px] font-semibold tabular-nums">{up?.latencyMs != null ? `${up.latencyMs} ms` : '—'}</dd>
+          <dt className="text-muted">Next drop</dt>
+          <dd className="text-[15px] font-semibold tabular-nums">{pod.status === 'maintenance' ? '—' : next}</dd>
         </div>
         <div>
-          <dt className="text-muted">HTTP status</dt>
-          <dd className="text-[15px] font-semibold tabular-nums">{up?.httpStatus ?? '—'}</dd>
-        </div>
-        <div>
-          <dt className="text-muted">Proxy tools</dt>
-          <dd className="text-[15px] font-semibold tabular-nums">{health?.proxy.tools.length ?? '—'}</dd>
+          <dt className="text-muted">Region</dt>
+          <dd className="text-[15px] font-semibold">{pod.region}</dd>
         </div>
       </dl>
-      <Button variant="secondary" size="sm" className="mt-auto self-start" onClick={() => open({ type: 'mcp' })}>
-        Open inspector
-      </Button>
     </Card>
   );
 }
@@ -193,7 +192,7 @@ export function Dispensers() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <ZoneCard kind="cryo" podId={podId} />
         <ZoneCard kind="thermal" podId={podId} />
-        <McpStatusCard />
+        <PodStatusCard pod={pod} />
       </div>
 
       <Card className="mt-4 flex flex-col gap-4 md:flex-row md:items-center">

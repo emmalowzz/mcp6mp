@@ -1,34 +1,14 @@
-// Browser client for the server-side routes. No credentials live here.
-
-export type HealthReport = {
-  service: string;
-  status: 'online' | 'degraded';
-  checkedAt: string;
-  upstream: {
-    endpoint: string;
-    reachable: boolean;
-    httpStatus: number | null;
-    latencyMs: number | null;
-    authenticated: boolean;
-    serverInfo: { name?: string; version?: string } | null;
-    remoteTools: string[];
-    error: string | null;
-  };
-  proxy: { endpoint: string; tools: string[] };
-  credentialConfigured: boolean;
-};
-
-export type ToolInfo = { name: string; description: string; inputSchema: unknown };
+// Browser client for the server-side tool routes. No credentials live here.
 
 let rpcId = 0;
 
 async function rpc<T>(method: string, params?: unknown): Promise<T> {
-  const res = await fetch('/api/mcp', {
+  const res = await fetch('/api/tools', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ jsonrpc: '2.0', id: ++rpcId, method, params }),
   });
-  if (!res.ok) throw new Error(`MCP proxy returned HTTP ${res.status}`);
+  if (!res.ok) throw new Error(`Server returned HTTP ${res.status}`);
   const data = await res.json();
   if (data.error) throw new Error(data.error.message);
   return data.result as T;
@@ -39,19 +19,8 @@ export async function callTool<T = Record<string, unknown>>(name: string, args: 
     name,
     arguments: args,
   });
-  if (result.isError) throw new Error(result.content?.[0]?.text || 'Tool call failed');
+  if (result.isError) throw new Error(result.content?.[0]?.text || 'Request failed');
   return result.structuredContent as T;
-}
-
-export async function listTools(): Promise<ToolInfo[]> {
-  const result = await rpc<{ tools: ToolInfo[] }>('tools/list');
-  return result.tools;
-}
-
-export async function getHealth(): Promise<HealthReport> {
-  const res = await fetch('/api/health', { cache: 'no-store' });
-  if (!res.ok) throw new Error(`Health check returned HTTP ${res.status}`);
-  return res.json();
 }
 
 export type RecoveryResult = {

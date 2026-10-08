@@ -1,11 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { getHealth, type HealthReport } from './mcp';
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import type { MealId } from '../data/catalog';
 
 export type Screen = 'overview' | 'nutrition' | 'venues' | 'dispensers' | 'partners';
 
 export type ModalState =
-  | { type: 'mcp' }
   | { type: 'nfc'; podId?: string; passcode?: string }
   | { type: 'reserve'; mealId: MealId; podId?: string }
   | { type: 'meal'; mealId: MealId }
@@ -29,10 +27,6 @@ type Store = {
   addReservation: (r: Reservation) => void;
   profile: Profile | null;
   setProfile: (p: Profile) => void;
-  health: HealthReport | null;
-  healthError: string | null;
-  healthLoading: boolean;
-  refreshHealth: () => Promise<void>;
 };
 
 const Ctx = createContext<Store | null>(null);
@@ -46,32 +40,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [voucher, setVoucher] = useState<string | null>(null);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [health, setHealth] = useState<HealthReport | null>(null);
-  const [healthError, setHealthError] = useState<string | null>(null);
-  const [healthLoading, setHealthLoading] = useState(false);
 
   const go = useCallback((s: Screen) => {
     setScreen(s);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
-
-  const refreshHealth = useCallback(async () => {
-    setHealthLoading(true);
-    try {
-      setHealth(await getHealth());
-      setHealthError(null);
-    } catch (e) {
-      setHealthError((e as Error).message);
-    } finally {
-      setHealthLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    refreshHealth();
-    const t = setInterval(refreshHealth, 60_000);
-    return () => clearInterval(t);
-  }, [refreshHealth]);
 
   const redeemVoucher = useCallback(
     (code: string) => {
@@ -101,12 +74,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addReservation,
       profile,
       setProfile,
-      health,
-      healthError,
-      healthLoading,
-      refreshHealth,
     }),
-    [screen, go, modal, voucher, redeemVoucher, reservations, addReservation, profile, health, healthError, healthLoading, refreshHealth],
+    [screen, go, modal, voucher, redeemVoucher, reservations, addReservation, profile],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

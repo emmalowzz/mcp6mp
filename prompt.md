@@ -31,3 +31,7 @@ Attached: a screenshot of the Miro Business Model Canvas, saved as [`docs/miro-b
 ## 4. Make the site more appealing
 
 > please make this site more user friendly and make the meals more appealing for people to want to order or join the subscription plan. currently no pictures to make people want to pay for this service/product
+
+## 5. Keep the MCP check on the back end
+
+> on the front end, remove any references to mcp. it is a check that i want to run on the back.

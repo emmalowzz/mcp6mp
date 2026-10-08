@@ -2,6 +2,16 @@
 
 Synchronised with every push. Newest first.
 
+## 2026-10-08 — v1.2.0 MCP check moved to the back end only
+
+No build or runtime errors.
+
+### Verification
+- `npm run typecheck` and `npm run build`: clean
+- Built front-end bundle (`dist/`): 0 occurrences of "mcp" or "smithery"
+- Headless Chromium end-to-end, all flows: no page errors. The only API route the browser called was `/api/tools`, and no page text mentions MCP.
+- `npm run check:mcp` → `OK https://mcp.smithery.ai/emmalowzz · HTTP 403 · authenticated: no` (exit 0)
+
 ## 2026-10-08 — v1.1.0 Meal imagery and conversion UX
 
 | # | Area | Error / symptom | Root cause | Fix | Status |

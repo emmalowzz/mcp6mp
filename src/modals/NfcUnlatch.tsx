@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Lock, LockOpen, Nfc, QrCode } from 'lucide-react';
 import { Button, Modal, Segmented, cx } from '../components/ui';
 import { useStore } from '../lib/store';
-import { callTool, type LockerResult } from '../lib/mcp';
+import { callTool, type LockerResult } from '../lib/api';
 import { pods } from '../data/catalog';
 
 const WINDOW = 15;
@@ -121,7 +121,7 @@ export function NfcUnlatch({ podId: initialPod, passcode }: { podId?: string; pa
             {phase === 'relatched' ? 'Unlatch again' : phase === 'reading' ? 'Reading…' : method === 'nfc' ? 'Simulate NFC tap' : 'Simulate QR scan'}
           </Button>
         )}
-        <p className="text-[11px] text-muted">Simulation: calls dispenser_claim_locker via /api/mcp. Doors auto-latch after {WINDOW} s.</p>
+        <p className="text-[11px] text-muted">Demo unlatch. For food safety, doors auto-latch after {WINDOW} s.</p>
       </div>
     </Modal>
   );

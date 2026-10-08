@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Bot, Check, Power, Users, Stethoscope } from 'lucide-react';
 import { Button, Card, Drawer, Field, SectionHeader, Segmented, StatusDot, inputCls, cx } from '../components/ui';
 import { MapCanvas } from '../components/MapCanvas';
-import { callTool, type BookingResult } from '../lib/mcp';
+import { callTool, type BookingResult } from '../lib/api';
 import { useStore } from '../lib/store';
 import { meals, pods, venues, type Venue, type VenueId } from '../data/catalog';
 import { MealArt } from '../components/MealArt';
@@ -242,7 +242,7 @@ function BookingBot() {
     const at = (ms: number, fn: () => void) => timers.current.push(window.setTimeout(fn, ms));
     at(500, () => {
       setState('armed');
-      push('Armed. Watching ActiveSG release queue via /api/mcp…', 'ok');
+      push('Armed. Watching the ActiveSG release queue…', 'ok');
     });
     at(2500, () => push('Polling… target slot full (0 courts).'));
     at(4500, () => push('Polling… target slot full (0 courts).'));
@@ -267,7 +267,7 @@ function BookingBot() {
       <SectionHeader
         eyebrow="Autonomous Court Booking Bot"
         title="Set it. Arm it. Get the court."
-        sub="The bot watches for released slots and books through the activesg_book_court MCP tool. Fair-use: one armed target per sport per day."
+        sub="The bot watches for released slots and books the moment one opens up. Fair-use: one armed target per sport per day."
       />
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
         <Card className="grid gap-3">
