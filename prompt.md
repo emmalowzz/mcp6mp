@@ -51,3 +51,7 @@ Attached: a screenshot of the Miro Business Model Canvas, saved as [`docs/miro-b
 ## 9. Rebuild from an earlier commit
 
 > i want to do a rebuild using this github commit b9c1e8adc6a72e1046ff627ab4e1d51b5e85a0dc
+
+## 10. Smithery key added in Vercel
+
+> i have included my Smithery MCP API key in Vercel environment variables.

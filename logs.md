@@ -2,6 +2,11 @@
 
 Synchronised with `/build/error.md` on every push.
 
+## 2026-10-08 — v1.4.2 Smithery key support check and `/mcp` fallback
+
+- **Confirmed:** `SMITHERY_API_KEY` (set in Vercel) is sent as `Authorization: Bearer …` to NutriBalance and the Smithery gateway, server-side only. It is never returned to the browser.
+- **New:** if the NutriBalance URL answers 404 or 405, the client retries once at `<url>/mcp` (Smithery's usual path) and remembers the working URL. `/api/health` reports the URL that answered.
+
 ## 2026-10-08 — v1.4.1 Rebuilt from commit b9c1e8a
 
 - Rolled the code back to `b9c1e8adc6a72e1046ff627ab4e1d51b5e85a0dc` (v1.4.0, My Daily Needs tab with NutriBalance) by reverting `a0fe222`. History was not rewritten.

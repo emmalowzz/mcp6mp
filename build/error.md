@@ -2,6 +2,20 @@
 
 Synchronised with every push. Newest first.
 
+## 2026-10-08 — v1.4.2 Smithery key support check and `/mcp` fallback
+
+| # | Area | Risk | Fix | Status |
+|---|------|------|-----|--------|
+| 8 | NutriBalance URL | Smithery servers are commonly served at `<url>/mcp`, and the configured URL has no `/mcp`. A 404 there would stop the key from ever being used | One retry at `<url>/mcp` on 404/405; the working URL is remembered | Fixed; still needs a live check (deployment unreachable from the build sandbox) |
+
+### Verification
+- Strict mock MCP server (answers only at `/nb/mcp`, needs `Bearer test-key`), configured as `/nb`:
+  - no key → 401
+  - wrong key → 401
+  - correct key → 200 with 5 tools
+  - `targets`, `food`, `score` and `plan` all came from NutriBalance
+- `npm run typecheck` and `npm run build`: clean; browser regression with no errors
+
 ## 2026-10-08 — v1.4.1 Rebuilt from commit b9c1e8a
 
 No errors. App code matches `b9c1e8a`. Verified with `git diff b9c1e8a -- . ':!logs.md' ':!build/error.md' ':!prompt.md'` (empty), plus `npm run typecheck`, `npm run build` and the end-to-end browser tests.

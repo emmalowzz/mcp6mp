@@ -38,19 +38,39 @@ async function readRpc(res) {
   }
 }
 
-async function post(body, sessionId) {
+// The URL that actually answered; may gain a '/mcp' suffix (see postInit).
+let activeUrl = NUTRIBALANCE_URL;
+
+async function post(body, sessionId, url = activeUrl) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
-    return await fetch(NUTRIBALANCE_URL, { method: 'POST', headers: headers(sessionId), body: JSON.stringify(body), signal: controller.signal });
+    return await fetch(url, { method: 'POST', headers: headers(sessionId), body: JSON.stringify(body), signal: controller.signal });
   } finally {
     clearTimeout(timer);
   }
 }
 
+// Smithery-hosted servers are often served at '<url>/mcp'. If the configured URL answers
+// 404/405, try that once and remember whichever one works.
+async function postInit(body) {
+  const res = await post(body);
+  if ((res.status === 404 || res.status === 405) && !/\/mcp\/?$/.test(activeUrl)) {
+    const alt = `${activeUrl.replace(/\/+$/, '')}/mcp`;
+    const retry = await post(body, undefined, alt);
+    if (retry.status !== 404 && retry.status !== 405) {
+      await res.body?.cancel?.();
+      activeUrl = alt;
+      return retry;
+    }
+    await retry.body?.cancel?.();
+  }
+  return res;
+}
+
 let rpcId = 0;
 async function session() {
-  const init = await post({
+  const init = await postInit({
     jsonrpc: '2.0',
     id: ++rpcId,
     method: 'initialize',
@@ -474,7 +494,8 @@ export async function probeNutriBalance() {
   const started = Date.now();
   const out = { endpoint: NUTRIBALANCE_URL, reachable: false, httpStatus: null, latencyMs: null, tools: [], error: null };
   try {
-    const res = await post({ jsonrpc: '2.0', id: 0, method: 'initialize', params: { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'activenutri-health', version: '1.4.0' } } });
+    const res = await postInit({ jsonrpc: '2.0', id: 0, method: 'initialize', params: { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'activenutri-health', version: '1.4.0' } } });
+    out.endpoint = activeUrl;
     out.latencyMs = Date.now() - started;
     out.httpStatus = res.status;
     out.reachable = res.status >= 200 && res.status <= 499;

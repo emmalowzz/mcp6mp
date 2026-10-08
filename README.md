@@ -40,6 +40,8 @@ The form, today's log and weight history are saved in the browser's localStorage
 3. It fills that tool's arguments from its own `inputSchema`. For example, `moderate` is matched to an `activity_level` option such as `moderately_active`, and the calorie target goes to a field such as `calorie_goal`.
 4. It normalises the reply and rejects implausible numbers.
 
+**Smithery key:** set `SMITHERY_API_KEY` in Vercel (Project → Settings → Environment Variables, Production), then redeploy. The key is sent as `Authorization: Bearer …` on server-side calls only. If the configured URL answers 404 or 405, the client retries once at `<url>/mcp` and keeps whichever works.
+
 If NutriBalance is unreachable, needs a key, or a call fails, the route answers from built-in formulas (Mifflin-St Jeor plus standard RDAs and a local food table). The page labels each result *Calculated by NutriBalance* or *ActiveNutri estimate*.
 
 ## Back-end MCP check
