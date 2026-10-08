@@ -35,3 +35,7 @@ Attached: a screenshot of the Miro Business Model Canvas, saved as [`docs/miro-b
 ## 5. Keep the MCP check on the back end
 
 > on the front end, remove any references to mcp. it is a check that i want to run on the back.
+
+## 6. Simplify For Partners
+
+> keep the "for partners" tab simple, remove all features except the "Partner inquiry" portion

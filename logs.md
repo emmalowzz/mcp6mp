@@ -2,6 +2,12 @@
 
 Synchronised with `/build/error.md` on every push.
 
+## 2026-10-08 — v1.3.0 Simpler For Partners page
+
+- **For Partners is now just the partner inquiry form:** the circular revenue model, stakeholder cards, unit-economics calculator and on-page Business Model Canvas are gone. The form keeps its three steps and has a short intro.
+- **Removed `src/data/bmc.ts`:** only the canvas section used it. The Miro board image stays in `docs/` as the design artefact.
+- **Footer:** the Strategyzer template credit has moved to the README, since the canvas is no longer shown on the site.
+
 ## 2026-10-08 — v1.2.0 MCP check moved to the back end only
 
 - **Removed from the website:** the header MCP status button, the MCP Status Inspector pop-up, the "Live MCP connection" card, the footer "Check MCP status" link and Smithery mention, and on-screen mentions of MCP tools or `/api/mcp`.

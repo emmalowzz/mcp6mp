@@ -34,12 +34,6 @@ export function Footer() {
           <p>
             © 2026 ActiveNutri · Integrations: ActiveSG, OneMap SG, SFA cloud kitchens.
           </p>
-          <p>
-            Business Model Canvas template by Strategyzer AG,{' '}
-            <a className="text-link hover:underline" href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noreferrer">
-              CC BY-SA 3.0
-            </a>
-          </p>
         </div>
       </div>
     </footer>

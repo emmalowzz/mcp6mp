@@ -2,6 +2,15 @@
 
 Synchronised with every push. Newest first.
 
+## 2026-10-08 — v1.3.0 Simpler For Partners page
+
+No build or runtime errors.
+
+### Verification
+- `npm run typecheck` and `npm run build`: clean
+- Headless Chromium end-to-end, including all three partner inquiry steps and submit: no page errors
+- No horizontal overflow at 390 px and 1280 px
+
 ## 2026-10-08 — v1.2.0 MCP check moved to the back end only
 
 No build or runtime errors.

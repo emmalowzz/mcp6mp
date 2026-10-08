@@ -2,7 +2,7 @@
 
 Singapore sports nutrition, recovery and venue-booking ecosystem — Vite + React 19 + TypeScript + Express + Tailwind CSS v4, linked to the Smithery MCP gateway.
 
-Built from [`ACTIVENUTRI_MASTERPROMPT.md`](ACTIVENUTRI_MASTERPROMPT.md) and the team’s Miro Business Model Canvas ([`docs/miro-business-model-canvas.png`](docs/miro-business-model-canvas.png)). The canvas is transcribed in `src/data/bmc.ts` and rendered on the **For Partners** screen, where each block notes the feature it became.
+Built from [`ACTIVENUTRI_MASTERPROMPT.md`](ACTIVENUTRI_MASTERPROMPT.md) and the team’s Miro Business Model Canvas ([`docs/miro-business-model-canvas.png`](docs/miro-business-model-canvas.png)). The canvas shaped the features (membership tiers, booking bot, Snap & Calculate, pod pickup, partner types); the board image is kept in `docs/` as the design artefact (template by Strategyzer AG, CC BY-SA 3.0). The **For Partners** screen is a single partner inquiry form.
 
 ## Run
 
